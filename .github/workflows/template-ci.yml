@@ -19,17 +19,17 @@ jobs:
       - uses: actions/checkout@v7
       - name: Install cargo-generate
         run: cargo install cargo-generate --version 0.23.14 --locked
-      - name: Generate smoke project
+      - name: Generate sample project
         run: |
           cargo generate \
             --path . \
             --destination "$RUNNER_TEMP" \
-            --name smoke-cli \
+            --name sample-app \
             --silent \
             --define github_owner=example \
-            --define description="Smoke test CLI"
+            --define description="Sample application"
       - name: Verify feature combinations
-        working-directory: ${{ runner.temp }}/smoke-cli
+        working-directory: ${{ runner.temp }}/sample-app
         run: |
           cargo fmt --all -- --check
           cargo check --locked --no-default-features
@@ -39,28 +39,37 @@ jobs:
           cargo test --locked --all-features
           cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
       - name: Verify command visibility
-        working-directory: ${{ runner.temp }}/smoke-cli
+        working-directory: ${{ runner.temp }}/sample-app
         run: |
           cargo run --quiet -- --help | grep -Eq '^  config'
           if cargo run --quiet -- --help | grep -Eq '^  new'; then exit 1; fi
           if cargo run --quiet --no-default-features -- --help | grep -Eq '^  (config|new)'; then exit 1; fi
       - name: Verify command scaffolding
-        working-directory: ${{ runner.temp }}/smoke-cli
+        working-directory: ${{ runner.temp }}/sample-app
         run: |
           cargo run --quiet --features dev-tools,config -- new admin/user-add
+          grep -Fq 'sample_app_derive::CliCommand' src/commands/admin/mod.rs
           cargo fmt --all -- --check
           cargo check --locked --all-features
           cargo run --quiet --all-features -- admin user-add --help
       - name: Verify generated artifacts
-        working-directory: ${{ runner.temp }}/smoke-cli
+        working-directory: ${{ runner.temp }}/sample-app
         run: |
           if find . -name '*.liquid' -print -quit | grep -q .; then exit 1; fi
           if find . -path './hooks/*' -print -quit | grep -q .; then exit 1; fi
           if test -e .github/workflows/template-ci.yml; then exit 1; fi
-          if grep -R -E 'icli|quantumultx|clash|pnet|reqwest' . \
-            --exclude-dir=.git --exclude=Cargo.lock; then exit 1; fi
+          test -d sample-app-derive
+          test ! -e derive
+          grep -Fq 'members = ["sample-app-derive"]' Cargo.toml
+          grep -Fq 'sample_app_derive = { package = "sample-app-derive", path = "sample-app-derive" }' Cargo.toml
+          grep -Fq 'name = "sample-app-derive"' sample-app-derive/Cargo.toml
+          grep -Fq 'tree/main/sample-app-derive' sample-app-derive/Cargo.toml
+          grep -Fq '"sample-app-derive"' Cargo.lock
+          grep -Fq 'sample_app_derive::CliCommand' src/commands/mod.rs
+          grep -Fq 'sample_app_derive::CliCommand' src/commands/config/mod.rs
+          grep -Fq 'sample_app_derive::CliCommand' templates/cli/group.rs
       - name: Validate workflows
-        working-directory: ${{ runner.temp }}/smoke-cli
+        working-directory: ${{ runner.temp }}/sample-app
         run: |
           go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
           "$(go env GOPATH)/bin/actionlint"

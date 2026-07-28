@@ -9,7 +9,7 @@ mod new;
 
 use crate::prelude::*;
 
-#[derive(clap::Subcommand, cli_derive::CliCommand, Debug)]
+#[derive(clap::Subcommand, {{ crate_name }}_derive::CliCommand, Debug)]
 pub enum Command {
     Completion(completion::CompletionCmd),
 

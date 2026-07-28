@@ -49,9 +49,9 @@ Run the same checks as CI:
 ```shell
 cargo generate \
   --path . \
-  --name smoke-cli \
+  --name sample-app \
   --define github_owner=example \
-  --define description="Smoke test CLI"
+  --define description="Sample application"
 ```
 
 The template requires `cargo-generate` 0.23.0 or newer.

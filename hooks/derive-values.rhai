@@ -1,6 +1,8 @@
 let project_name = variable::get("project-name");
 let github_owner = variable::get("github_owner");
 
+file::rename("derive", `${project_name}-derive`);
+
 if !variable::is_set("homebrew_formula") {
     variable::set("homebrew_formula", project_name);
 }

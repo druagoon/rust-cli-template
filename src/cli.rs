@@ -21,8 +21,8 @@ pub struct Cli {
 impl Cli {
     pub fn exec() {
         let cli = Self::parse();
-        if let Err(error) = cli.run() {
-            eprintln!("{error:?}");
+        if let Err(err) = cli.run() {
+            eprintln!("{err:?}");
             std::process::exit(1);
         }
     }

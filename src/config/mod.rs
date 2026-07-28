@@ -55,9 +55,9 @@ pub(crate) fn merged_value(paths: &ConfigPaths) -> anyhow::Result<toml::Value> {
 
 fn build(paths: &ConfigPaths) -> anyhow::Result<::config::Config> {
     ::config::Config::builder()
-        .add_source(::config::File::from_str(DEFAULT_CONFIG, ::config::FileFormat::Toml))
         .add_source(::config::File::from(paths.user.clone()).required(false))
         .add_source(::config::File::from(paths.local.clone()).required(false))
+        .add_source(::config::File::from_str(DEFAULT_CONFIG, ::config::FileFormat::Toml))
         .build()
         .context("failed to merge configuration sources")
 }
