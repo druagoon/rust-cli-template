@@ -1,0 +1,30 @@
+name: CI
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      - name: Check minimal feature set
+        run: cargo check --locked --no-default-features
+      - name: Check config feature
+        run: cargo check --locked --no-default-features --features config
+      - name: Check development tools feature
+        run: cargo check --locked --no-default-features --features dev-tools
+      - name: Check all features
+        run: cargo check --locked --all-features
+      - name: Run tests
+        run: cargo test --locked --all-features
+      - name: Run Clippy
+        run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings

@@ -1,0 +1,22 @@
+[package]
+name = "{{ crate_name }}_derive"
+version = "0.1.0"
+description = "Procedural macros for {{ project-name }}."
+repository = "{{ repository }}/tree/main/derive"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish = false
+categories = [
+    "command-line-interface",
+    "development-tools::procedural-macro-helpers",
+]
+keywords = ["cli", "derive", "proc-macro"]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0.107"
+quote = "1.0.47"
+syn = { version = "3.0.3", features = ["extra-traits"] }

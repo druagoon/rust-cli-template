@@ -1,0 +1,66 @@
+name: Template CI
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  generate-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install cargo-generate
+        run: cargo install cargo-generate --version 0.23.14 --locked
+      - name: Generate smoke project
+        run: |
+          cargo generate \
+            --path . \
+            --destination "$RUNNER_TEMP" \
+            --name smoke-cli \
+            --silent \
+            --define github_owner=example \
+            --define description="Smoke test CLI"
+      - name: Verify feature combinations
+        working-directory: ${{ runner.temp }}/smoke-cli
+        run: |
+          cargo fmt --all -- --check
+          cargo check --locked --no-default-features
+          cargo check --locked --no-default-features --features config
+          cargo check --locked --no-default-features --features dev-tools
+          cargo check --locked --all-features
+          cargo test --locked --all-features
+          cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
+      - name: Verify command visibility
+        working-directory: ${{ runner.temp }}/smoke-cli
+        run: |
+          cargo run --quiet -- --help | grep -Eq '^  config'
+          if cargo run --quiet -- --help | grep -Eq '^  new'; then exit 1; fi
+          if cargo run --quiet --no-default-features -- --help | grep -Eq '^  (config|new)'; then exit 1; fi
+      - name: Verify command scaffolding
+        working-directory: ${{ runner.temp }}/smoke-cli
+        run: |
+          cargo run --quiet --features dev-tools,config -- new admin/user-add
+          cargo fmt --all -- --check
+          cargo check --locked --all-features
+          cargo run --quiet --all-features -- admin user-add --help
+      - name: Verify generated artifacts
+        working-directory: ${{ runner.temp }}/smoke-cli
+        run: |
+          if find . -name '*.liquid' -print -quit | grep -q .; then exit 1; fi
+          if find . -path './hooks/*' -print -quit | grep -q .; then exit 1; fi
+          if test -e .github/workflows/template-ci.yml; then exit 1; fi
+          if grep -R -E 'icli|quantumultx|clash|pnet|reqwest' . \
+            --exclude-dir=.git --exclude=Cargo.lock; then exit 1; fi
+      - name: Validate workflows
+        working-directory: ${{ runner.temp }}/smoke-cli
+        run: |
+          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+          "$(go env GOPATH)/bin/actionlint"

@@ -1,0 +1,24 @@
+[template]
+cargo_generate_version = ">=0.23.0"
+include = [
+    "Cargo.toml",
+    "Cargo.lock",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE-MIT",
+    "cliff.toml",
+    "derive/Cargo.toml",
+    ".github/workflows/ci.yml",
+    ".github/workflows/release.yml",
+]
+ignore = [
+    ".github/workflows/template-ci.yml",
+    "hooks",
+]
+
+[hooks]
+pre = ["hooks/derive-values.rhai"]
+
+[placeholders]
+description = { type = "string", prompt = "Project description?", default = "A command-line application." }
+github_owner = { type = "string", prompt = "GitHub user or organization?", regex = "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$" }

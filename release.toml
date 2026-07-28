@@ -1,0 +1,12 @@
+allow-branch = ["main"]
+publish = false
+consolidate-commits = false
+pre-release-hook = [
+    "git",
+    "cliff",
+    "-o",
+    "CHANGELOG.md",
+    "--tag",
+    "v{{version}}",
+]
+pre-release-commit-message = "chore: release {{crate_name}} {{version}}"

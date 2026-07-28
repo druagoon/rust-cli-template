@@ -1,0 +1,94 @@
+# {{ project-name }}
+
+[![CI](https://github.com/{{ github_owner }}/{{ project-name }}/actions/workflows/ci.yml/badge.svg)](https://github.com/{{ github_owner }}/{{ project-name }}/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/{{ github_owner }}/{{ project-name }})]({{ repository }}/blob/main/LICENSE-MIT)
+
+{{ description }}
+
+## Installation
+
+Install a released binary from [GitHub Releases]({{ repository }}/releases), or build from source:
+
+```shell
+cargo install --locked --git {{ repository }}
+```
+
+## Usage
+
+```shell
+{{ project-name }} --help
+{{ project-name }} completion bash
+{{ project-name }} config show
+```
+
+## Development
+
+The default feature set contains runtime configuration support but excludes source scaffolding:
+
+```shell
+cargo check --locked
+cargo test --locked
+```
+
+Enable the development-only `new` command:
+
+```shell
+cargo dev new admin/user-add
+```
+
+Equivalent command:
+
+```shell
+cargo run --features dev-tools,config -- new admin/user-add
+```
+
+Build the minimal binary without configuration management:
+
+```shell
+cargo build --locked --no-default-features
+```
+
+Build the same feature set used by official releases:
+
+```shell
+cargo build \
+  --release \
+  --locked \
+  --no-default-features \
+  --features config
+```
+
+Run all quality checks:
+
+```shell
+make check-all
+```
+
+## Configuration
+
+Configuration sources are merged in increasing priority:
+
+1. Built-in defaults.
+2. User configuration at `~/.config/{{ project-name }}/config.toml`.
+3. Project configuration at `.config/{{ project-name }}/config.toml`.
+
+```shell
+{{ project-name }} config generate
+{{ project-name }} config generate --local
+{{ project-name }} config list --exists
+{{ project-name }} config show --format json
+```
+
+Projects can define a typed application model and load it with `config::load::<AppConfig>()`.
+
+## Release
+
+Releases are created from `vX.Y.Z` tags. Before publishing, configure the
+`HOMEBREW_GITHUB_API_TOKEN` repository secret with write access to `{{ homebrew_tap }}`.
+
+The release workflow publishes binaries for Windows, macOS, and Linux, then updates the
+`{{ homebrew_formula }}` formula in `{{ homebrew_tap }}`.
+
+## License
+
+Licensed under the [MIT License](LICENSE-MIT).
