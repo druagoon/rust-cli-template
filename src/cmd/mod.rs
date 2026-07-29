@@ -4,9 +4,6 @@ mod config;
 #[cfg(feature = "dev-tools")]
 mod new;
 
-// <generated-command-modules>
-// </generated-command-modules>
-
 use crate::prelude::*;
 
 #[derive(clap::Subcommand, {{ crate_name }}_derive::CliCommand, Debug)]
@@ -19,6 +16,4 @@ pub enum Command {
 
     #[cfg(feature = "dev-tools")]
     New(new::NewCmd),
-    // <generated-command-variants>
-    // </generated-command-variants>
 }

@@ -25,8 +25,8 @@ clippy: ## Run Clippy with all features
 fmt: ## Format Rust sources
 	cargo fmt --all
 
-.PHONY: fmt-check
-fmt-check: ## Check Rust formatting
+.PHONY: check-fmt
+check-fmt: ## Check Rust formatting
 	cargo fmt --all -- --check
 
 .PHONY: check-toml
@@ -34,11 +34,18 @@ check-toml: ## Check TOML formatting
 	taplo format --check
 
 .PHONY: check-deps
-check-deps: ## Check for unused dependencies
+check-deps: ## Check unused dependencies
+# 	@echo "Checking for unused dependencies..."
 	cargo machete
+	cargo shear
+
+.PHONY: fix-deps
+fix-deps: ## Check unused dependencies and fix
+	cargo machete --fix
+	cargo shear --fix
 
 .PHONY: check-all
-check-all: fmt-check check-features test clippy ## Run all Rust checks
+check-all: check-fmt check-features test clippy ## Run all Rust checks
 
 .PHONY: help
 help: ## Display available targets

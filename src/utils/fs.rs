@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::fs;
 use std::io::{self, BufRead};
 use std::path::Path;
