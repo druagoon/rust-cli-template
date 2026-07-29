@@ -1,6 +1,6 @@
 use clap::{CommandFactory, Parser};
 
-use crate::commands::Command;
+use crate::cmd::Command;
 use crate::error::CliResult;
 
 pub trait CliCommand {

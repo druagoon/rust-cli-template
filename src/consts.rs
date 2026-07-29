@@ -12,4 +12,4 @@ pub static SRC_DIR: Lazy<PathBuf> = Lazy::new(|| ROOT_DIR.join("src"));
 pub static TEMPLATES_DIR: Lazy<PathBuf> = Lazy::new(|| ROOT_DIR.join("templates"));
 
 #[allow(dead_code)]
-pub static COMMANDS_DIR: Lazy<PathBuf> = Lazy::new(|| SRC_DIR.join("commands"));
+pub static CMD_DIR: Lazy<PathBuf> = Lazy::new(|| SRC_DIR.join("cmd"));

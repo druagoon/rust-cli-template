@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 
 use anyhow::Context;
 
-use crate::config::{ConfigPaths, DEFAULT_CONFIG};
+use crate::conf::{ConfigPaths, DEFAULT_CONFIG};
 use crate::prelude::*;
 
 /// Generate a configuration file.

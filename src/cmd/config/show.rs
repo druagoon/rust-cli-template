@@ -1,6 +1,6 @@
 use clap::ValueEnum;
 
-use crate::config::{ConfigPaths, merged_value};
+use crate::conf::{ConfigPaths, merged_value};
 use crate::prelude::*;
 
 /// Show the merged configuration.

@@ -2,7 +2,7 @@ use std::fs;
 
 use anyhow::Context;
 
-use crate::config::ConfigPaths;
+use crate::conf::ConfigPaths;
 use crate::prelude::*;
 
 /// List configuration files.

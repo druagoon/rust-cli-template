@@ -48,7 +48,7 @@ jobs:
         working-directory: ${{ runner.temp }}/sample-app
         run: |
           cargo run --quiet --features dev-tools,config -- new admin/user-add
-          grep -Fq 'sample_app_derive::CliCommand' src/commands/admin/mod.rs
+          grep -Fq 'sample_app_derive::CliCommand' src/cmd/admin/mod.rs
           cargo fmt --all -- --check
           cargo check --locked --all-features
           cargo run --quiet --all-features -- admin user-add --help
@@ -65,8 +65,8 @@ jobs:
           grep -Fq 'name = "sample-app-derive"' sample-app-derive/Cargo.toml
           grep -Fq 'tree/main/sample-app-derive' sample-app-derive/Cargo.toml
           grep -Fq '"sample-app-derive"' Cargo.lock
-          grep -Fq 'sample_app_derive::CliCommand' src/commands/mod.rs
-          grep -Fq 'sample_app_derive::CliCommand' src/commands/config/mod.rs
+          grep -Fq 'sample_app_derive::CliCommand' src/cmd/mod.rs
+          grep -Fq 'sample_app_derive::CliCommand' src/cmd/config/mod.rs
           grep -Fq 'sample_app_derive::CliCommand' templates/cli/group.rs
       - name: Validate workflows
         working-directory: ${{ runner.temp }}/sample-app

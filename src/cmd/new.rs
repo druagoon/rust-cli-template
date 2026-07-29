@@ -80,13 +80,12 @@ struct PlannedWrite {
 
 fn find_project_root(start: &Path) -> anyhow::Result<PathBuf> {
     for directory in start.ancestors() {
-        if directory.join("Cargo.toml").is_file() && directory.join("src/commands/mod.rs").is_file()
-        {
+        if directory.join("Cargo.toml").is_file() && directory.join("src/cmd/mod.rs").is_file() {
             return Ok(directory.to_path_buf());
         }
     }
     anyhow::bail!(
-        "failed to find a project root containing Cargo.toml and src/commands/mod.rs from {}",
+        "failed to find a project root containing Cargo.toml and src/cmd/mod.rs from {}",
         start.display()
     )
 }
@@ -108,13 +107,13 @@ fn parse_path(path: &str) -> anyhow::Result<Vec<Segment>> {
 
 fn generate_command(project_root: &Path, path: &str) -> anyhow::Result<()> {
     let segments = parse_path(path)?;
-    let commands_root = project_root.join("src/commands");
-    let root_module = commands_root.join("mod.rs");
+    let cmd_root = project_root.join("src/cmd");
+    let root_module = cmd_root.join("mod.rs");
     let mut engine = tera::Tera::default();
     engine.add_raw_template(COMMAND_TEMPLATE_NAME, COMMAND_TEMPLATE)?;
     engine.add_raw_template(GROUP_TEMPLATE_NAME, GROUP_TEMPLATE)?;
 
-    validate_topology(&commands_root, &segments)?;
+    validate_topology(&cmd_root, &segments)?;
 
     let mut writes = Vec::new();
     let root_content = fs::read_to_string(&root_module)
@@ -130,7 +129,7 @@ fn generate_command(project_root: &Path, path: &str) -> anyhow::Result<()> {
         let child_is_group = group_index + 1 < segments.len() - 1;
         let group_directory = segments[..=group_index]
             .iter()
-            .fold(commands_root.clone(), |path, segment| path.join(&segment.module));
+            .fold(cmd_root.clone(), |path, segment| path.join(&segment.module));
         let group_module = group_directory.join("mod.rs");
 
         let content = if group_module.exists() {
@@ -146,15 +145,15 @@ fn generate_command(project_root: &Path, path: &str) -> anyhow::Result<()> {
     let leaf = segments.last().context("command path has no leaf")?;
     let leaf_directory = segments[..segments.len() - 1]
         .iter()
-        .fold(commands_root, |path, segment| path.join(&segment.module));
+        .fold(cmd_root, |path, segment| path.join(&segment.module));
     let leaf_path = leaf_directory.join(format!("{}.rs", leaf.module));
     writes.push(PlannedWrite { path: leaf_path, content: render_command(&engine, leaf)? });
 
     apply_writes(&writes)
 }
 
-fn validate_topology(commands_root: &Path, segments: &[Segment]) -> anyhow::Result<()> {
-    let mut parent = commands_root.to_path_buf();
+fn validate_topology(cmd_root: &Path, segments: &[Segment]) -> anyhow::Result<()> {
+    let mut parent = cmd_root.to_path_buf();
     for segment in &segments[..segments.len() - 1] {
         let conflicting_leaf = parent.join(format!("{}.rs", segment.module));
         if conflicting_leaf.exists() {
@@ -388,10 +387,10 @@ mod tests {
             let id = TEST_ID.fetch_add(1, Ordering::Relaxed);
             let root =
                 std::env::temp_dir().join(format!("cli-new-test-{}-{id}", std::process::id()));
-            fs::create_dir_all(root.join("src/commands"))?;
+            fs::create_dir_all(root.join("src/cmd"))?;
             fs::write(root.join("Cargo.toml"), "[package]\nname = \"test\"\n")?;
             fs::write(
-                root.join("src/commands/mod.rs"),
+                root.join("src/cmd/mod.rs"),
                 format!(
                     "{MODULES_START}\n{MODULES_END}\n\nenum Command {{\n    {VARIANTS_START}\n    {VARIANTS_END}\n}}\n"
                 ),
@@ -411,14 +410,14 @@ mod tests {
         let project = TestProject::new()?;
         generate_command(&project.0, "admin/user-add")?;
 
-        let root_module = fs::read_to_string(project.0.join("src/commands/mod.rs"))?;
+        let root_module = fs::read_to_string(project.0.join("src/cmd/mod.rs"))?;
         assert!(root_module.contains("mod admin;"));
         assert!(root_module.contains("#[command(subcommand)]\n    Admin(admin::AdminCmd),"));
 
-        let group_module = fs::read_to_string(project.0.join("src/commands/admin/mod.rs"))?;
+        let group_module = fs::read_to_string(project.0.join("src/cmd/admin/mod.rs"))?;
         assert!(group_module.contains("mod user_add;"));
         assert!(group_module.contains("UserAdd(user_add::UserAddCmd),"));
-        assert!(project.0.join("src/commands/admin/user_add.rs").is_file());
+        assert!(project.0.join("src/cmd/admin/user_add.rs").is_file());
         Ok(())
     }
 
@@ -428,9 +427,9 @@ mod tests {
         assert!(generate_command(&project.0, "../escape").is_err());
 
         generate_command(&project.0, "status")?;
-        let before = fs::read_to_string(project.0.join("src/commands/status.rs"))?;
+        let before = fs::read_to_string(project.0.join("src/cmd/status.rs"))?;
         assert!(generate_command(&project.0, "status").is_err());
-        assert_eq!(fs::read_to_string(project.0.join("src/commands/status.rs"))?, before);
+        assert_eq!(fs::read_to_string(project.0.join("src/cmd/status.rs"))?, before);
         Ok(())
     }
 }

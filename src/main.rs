@@ -1,7 +1,7 @@
 mod cli;
-mod commands;
+mod cmd;
 #[cfg(feature = "config")]
-mod config;
+mod conf;
 mod consts;
 mod de;
 mod error;
